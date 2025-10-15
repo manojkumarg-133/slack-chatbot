@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.window"],
+    "strict": true
+  },
+  "lint": {
+    "files": {
+      "include": ["./"]
+    }
+  },
+  "fmt": {
+    "files": {
+      "include": ["./"]
+    }
+  },
+  "imports": {
+    "supabase": "https://esm.sh/@supabase/supabase-js@2",
+    "@google/generative-ai": "https://esm.sh/@google/generative-ai@0.18.0"
+  }
+}

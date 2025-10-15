@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Slack Gemini Bot 🤖
 
-## Getting Started
+A powerful Slack chatbot powered by Google's Gemini AI, built with Next.js, TypeScript, and Supabase.
 
-First, run the development server:
+## 🌟 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **AI-Powered Conversations**: Uses Google's Gemini Pro model for intelligent responses
+- **Conversation Threading**: Maintains context across multiple messages
+- **User Management**: Tracks all users who interact with the bot
+- **Message History**: Stores all conversations in Supabase
+- **Analytics**: Track tokens used, processing time, and more
+- **Direct Messages**: Supports both @mentions and DMs
+- **Error Handling**: Robust error handling and logging
+- **TypeScript**: Fully typed for better developer experience
+
+## 📋 Prerequisites
+
+- Node.js 18+ and npm
+- A Slack workspace where you have permissions to install apps
+- A Google Cloud account with Gemini API access
+- A Supabase account and project
+
+## 🚀 Quick Start
+
+See [SETUP.md](./SETUP.md) for detailed step-by-step instructions.
+
+### Quick Setup
+
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+2. **Set up your services**
+   - Create a Slack App
+   - Get Gemini API key
+   - Create Supabase project
+   - Run database schema
+
+3. **Configure environment variables**
+   - Copy `.env.local` and fill in your credentials
+
+4. **Deploy**
+   ```bash
+   vercel
+   ```
+
+5. **Configure Slack Event URL**
+   - Set to: `https://your-app.vercel.app/api/slack/events`
+
+## 🗄️ Database Schema
+
+### Tables
+
+1. **users** - Stores Slack user information
+2. **conversations** - Stores conversation threads
+3. **messages** - Stores all messages (queries and responses)
+4. **message_reactions** - Stores user reactions/likes
+
+See `supabase/schema.sql` for the complete schema.
+
+## 🔧 Project Structure
+
+```
+slack-gemini-bot/
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── slack/events/          # Slack event handler
+│   │   │   └── analytics/             # Analytics endpoints
+│   │   └── ...
+│   ├── lib/
+│   │   ├── supabaseClient.ts         # Supabase client
+│   │   ├── database.ts               # Database helpers
+│   │   ├── gemini.ts                 # Gemini AI helpers
+│   │   └── slack.ts                  # Slack helpers
+│   └── types/
+│       └── database.types.ts         # TypeScript types
+├── supabase/
+│   └── schema.sql                    # Database schema
+└── SETUP.md                          # Detailed setup guide
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🎯 Usage
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### In Slack Channels
+```
+@GeminiBot What is the capital of France?
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### In Direct Messages
+```
+Tell me a joke about programming
+```
 
-## Learn More
+## 📊 API Endpoints
 
-To learn more about Next.js, take a look at the following resources:
+- `GET /api/analytics/user-stats?slackUserId=U12345`
+- `GET /api/analytics/conversation-history?conversationId=xxx`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📝 Environment Variables
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Variable | Description |
+|----------|-------------|
+| `SLACK_SIGNING_SECRET` | Slack app signing secret |
+| `SLACK_BOT_TOKEN` | Slack bot OAuth token |
+| `GEMINI_API_KEY` | Google Gemini API key |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
 
-## Deploy on Vercel
+## 📄 License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT

@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "lib": ["deno.window"],
+    "strict": true,
+    "allowJs": true,
+    "allowImportingTsExtensions": true,
+    "types": [
+      "https://deno.land/x/types/react/index.d.ts"
+    ]
+  },
+  "lint": {
+    "files": {
+      "include": ["supabase/functions/"]
+    }
+  },
+  "fmt": {
+    "files": {
+      "include": ["supabase/functions/"]
+    }
+  }
+}
