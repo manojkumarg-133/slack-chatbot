@@ -45,12 +45,12 @@ export async function updateSlackMessage(
   channel: string,
   ts: string,
   text: string
-): Promise<boolean> {
+): Promise<{ ok: boolean; ts?: string; channel?: string }> {
   try {
     const token = Deno.env.get('SLACK_BOT_TOKEN');
     if (!token) {
       console.error('SLACK_BOT_TOKEN not found');
-      return false;
+      return { ok: false };
     }
 
     const response = await fetch('https://slack.com/api/chat.update', {
@@ -67,10 +67,20 @@ export async function updateSlackMessage(
     });
 
     const data = await response.json();
-    return data.ok;
+    
+    if (data.ok) {
+      return {
+        ok: true,
+        ts: data.ts || ts,  // Return the original ts if API doesn't return one
+        channel: data.channel || channel,
+      };
+    } else {
+      console.error('Error updating Slack message:', data.error);
+      return { ok: false };
+    }
   } catch (error) {
     console.error('Error updating Slack message:', error);
-    return false;
+    return { ok: false };
   }
 }
 

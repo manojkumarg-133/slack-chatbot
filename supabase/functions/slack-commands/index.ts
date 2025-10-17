@@ -1,5 +1,5 @@
 // Slack Commands Edge Function for Supabase
-import { getOrCreateUser, getOrCreateConversation, deleteConversationFromDatabase } from '../_shared/database.ts';
+import { CentralizedDB } from '../_shared/centralized-database.ts';
 import { 
   createNewConversationForUser,
   getConversationStats
@@ -50,14 +50,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
         // Clear messages from screen only, keep database intact
         setTimeout(async () => {
           try {
-            const user = await getOrCreateUser(userId);
-            if (!user) {
+            const userResult = await CentralizedDB.upsertUser('slack', userId);
+            if (!userResult.success || !userResult.user) {
               await sendDelayedResponse(responseUrl, 'Error finding your user account.', true);
               return;
             }
             
-            const conversation = await getOrCreateConversation(user.id, channelId);
-            if (!conversation) {
+            const conversationResult = await CentralizedDB.getOrCreateConversation('slack', userResult.user.id, channelId);
+            if (!conversationResult.success || !conversationResult.conversation) {
               await sendDelayedResponse(responseUrl, 'No conversation found.', true);
               return;
             }
@@ -79,7 +79,7 @@ Due to Slack API restrictions, I can only delete my own messages, not yours. You
 
 💬 *To truly start fresh, use /new-chat instead.*`, true);
             }
-            console.log(`✅ User ${userId} cleared bot messages for conversation ${conversation.id}`);
+            console.log(`✅ User ${userId} cleared bot messages for conversation ${conversationResult.conversation.id}`);
           } catch (error) {
             console.error('❌ Error in /clear command:', error);
             await sendDelayedResponse(responseUrl, 'An error occurred while clearing the screen.', true);
@@ -98,13 +98,13 @@ Due to Slack API restrictions, I can only delete my own messages, not yours. You
         // Clear screen and create new conversation ID
         setTimeout(async () => {
           try {
-            const user = await getOrCreateUser(userId);
-            if (!user) {
+            const userResult = await CentralizedDB.upsertUser('slack', userId);
+            if (!userResult.success || !userResult.user) {
               await sendDelayedResponse(responseUrl, 'Error finding your user account.', true);
               return;
             }
             
-            const newConversationId = await createNewConversationForUser(user.id, channelId);
+            const newConversationId = await createNewConversationForUser(userResult.user.id, channelId);
             if (newConversationId) {
               await sendDelayedResponse(responseUrl, `🆕 **New Chat Started!**
 
@@ -133,26 +133,26 @@ Due to Slack API restrictions, I can only delete my own messages, not yours. You
         // Delete everything: screen messages AND database records
         setTimeout(async () => {
           try {
-            const user = await getOrCreateUser(userId);
-            if (!user) {
+            const userResult = await CentralizedDB.upsertUser('slack', userId);
+            if (!userResult.success || !userResult.user) {
               await sendDelayedResponse(responseUrl, 'Error finding your user account.', true);
               return;
             }
 
-            const conversation = await getOrCreateConversation(user.id, channelId);
-            if (!conversation) {
+            const conversationResult = await CentralizedDB.getOrCreateConversation('slack', userResult.user.id, channelId);
+            if (!conversationResult.success || !conversationResult.conversation) {
               await sendDelayedResponse(responseUrl, 'No conversation found to delete.', true);
               return;
             }
 
-            const stats = await getConversationStats(conversation.id);
+            const stats = await getConversationStats(conversationResult.conversation.id);
             if (!stats || stats.messageCount === 0) {
               await sendDelayedResponse(responseUrl, 'ℹ️ No messages to delete. Your chat is already empty!');
               return;
             }
 
-            // Delete from database
-            const dbSuccess = await deleteConversationFromDatabase(conversation.id);
+            // Archive conversation instead of deleting
+            const dbSuccess = await CentralizedDB.archiveConversation(conversationResult.conversation.id);
             
             // Try to clear bot messages from screen
             const slackToken = Deno.env.get('SLACK_BOT_TOKEN') || '';
@@ -172,7 +172,7 @@ Due to Slack API restrictions, I can only delete my own messages, not yours. You
               message += `\n\nThis conversation has been completely removed. Your next message will start a fresh conversation.`;
               
               await sendDelayedResponse(responseUrl, message);
-              console.log(`✅ User ${userId} deleted conversation ${conversation.id} completely`);
+              console.log(`✅ User ${userId} deleted conversation ${conversationResult.conversation.id} completely`);
             } else {
               await sendDelayedResponse(responseUrl, 'Failed to delete conversation. Please try again.', true);
             }

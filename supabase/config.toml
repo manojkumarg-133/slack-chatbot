@@ -37,7 +37,7 @@ double_confirm_changes = true
 enable_confirmations = false
 
 # Edge Functions Configuration
-[functions.slack-events]
+[functions.slack-events-centralized]
 verify_jwt = false
 
 [functions.slack-commands]

@@ -1,6 +1,6 @@
 // Gemini AI helper functions for Supabase Edge Functions
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { getConversationHistory, createUserQuery, createBotResponse } from './database.ts';
+import { CentralizedDB } from './centralized-database.ts';
 
 let genAI: GoogleGenerativeAI | null = null;
 
@@ -107,9 +107,10 @@ function buildConversationContext(
  */
 function detectLanguage(text: string): { language: string; confidence: number } {
   const languagePatterns = {
+    english: /\b(hello|hi|hey|thank you|thanks|please|yes|no|how|what|where|when|the|and|for|you|are|bot)\b/i,
     spanish: /\b(hola|gracias|por favor|sí|no|cómo|qué|dónde|cuándo)\b/i,
     french: /\b(bonjour|merci|s'il vous plaît|oui|non|comment|quoi|où|quand)\b/i,
-    german: /\b(hallo|danke|bitte|ja|nein|wie|was|wo|wann)\b/i,
+    german: /\b(hallo|danke|bitte|ja|nein|wie|was|wo|wann|ich|du|der|die|das)\b/i,
     italian: /\b(ciao|grazie|per favore|sì|no|come|cosa|dove|quando)\b/i,
     portuguese: /\b(olá|obrigado|por favor|sim|não|como|o que|onde|quando)\b/i,
     russian: /\b(привет|спасибо|пожалуйста|да|нет|как|что|где|когда)\b/i,
@@ -127,7 +128,8 @@ function detectLanguage(text: string): { language: string; confidence: number } 
     }
   }
 
-  return { language: 'english', confidence: 0.6 };
+  // Default to English with high confidence for short messages or common English words
+  return { language: 'english', confidence: 0.9 };
 }
 
 /**
@@ -137,7 +139,8 @@ export async function generateGeminiResponse(
   prompt: string,
   conversationId: string,
   slackUserId: string,
-  modelName: string = 'gemini-2.5-flash'
+  modelName: string = 'gemini-2.5-flash',
+  userMessageForLanguageDetection?: string
 ): Promise<{
   success: boolean;
   response: string;
@@ -155,9 +158,10 @@ export async function generateGeminiResponse(
       }
     }
 
-    // Detect user's language
-    const detection = detectLanguage(prompt);
-    console.log(`🌐 Detected language: ${detection.language} (confidence: ${detection.confidence})`);
+    // Detect user's language from the current message, not the full prompt with history
+    const textForLanguageDetection = userMessageForLanguageDetection || prompt;
+    const detection = detectLanguage(textForLanguageDetection);
+    console.log(`🌐 Detected language: ${detection.language} (confidence: ${detection.confidence}) from: "${textForLanguageDetection.substring(0, 50)}..."`);
 
     // Create model without systemInstruction (Gemini 2.0 Flash compatibility)
     const model = genAI.getGenerativeModel({ 
@@ -165,8 +169,9 @@ export async function generateGeminiResponse(
     });
 
     // Get conversation history from database
-    const conversationHistory = await getConversationHistory(conversationId);
-    console.log(`� Retrieved ${conversationHistory?.length || 0} messages from conversation history for conversation ${conversationId}`);
+    const historyResult = await CentralizedDB.getConversationHistory(conversationId);
+    const conversationHistory = historyResult.success ? historyResult.messages : [];
+    console.log(`📚 Retrieved ${conversationHistory?.length || 0} messages from conversation history for conversation ${conversationId}`);
 
     // Build full prompt with conversation context including reactions
     let fullPrompt = prompt;
@@ -181,7 +186,20 @@ export async function generateGeminiResponse(
     }
 
     // Add system instructions and language context to the prompt
-    const systemPrompt = `You are a helpful AI assistant in a Slack workspace. Always respond in the same language as the user's message (${detection.language}). Keep responses concise and helpful.\n\n`;
+    let systemPrompt;
+    if (detection.language === 'english') {
+      systemPrompt = `You are a helpful AI assistant in a Slack workspace. 
+
+CRITICAL: You MUST respond in ENGLISH ONLY. The user wrote their message in English, so you must reply in English.
+
+Keep responses concise, helpful, and professional. Always use English language for your response.\n\n`;
+    } else {
+      systemPrompt = `You are a helpful AI assistant in a Slack workspace. 
+
+IMPORTANT: The user's current message is in ${detection.language}. You MUST respond in the same language as the user's CURRENT message, which is ${detection.language}. 
+
+Keep responses concise, helpful, and professional.\n\n`;
+    }
     const languageContextPrompt = systemPrompt + fullPrompt;
 
     const result = await model.generateContent(languageContextPrompt);
@@ -198,32 +216,15 @@ export async function generateGeminiResponse(
       // Token count not available
     }
 
-    // Save user query and AI response to database
-    let queryId = 'unknown';
-    try {
-      // Save user query first to get the query_id
-      const userQuery = await createUserQuery(conversationId, prompt);
-      queryId = userQuery?.id || 'unknown';
-      
-      // Save bot response with the query_id
-      await createBotResponse({
-        query_id: queryId,
-        content: text,
-        tokens_used: tokensUsed,
-        model_used: modelName,
-        processing_time_ms: processingTime
-      });
-      console.log('💾 Successfully saved query and response to database');
-    } catch (dbError) {
-      console.error('❌ Failed to save to database:', dbError);
-    }
+    // Note: Database saves are handled by the main event handler
+    let queryId = 'handled-by-main-handler';
+    console.log('💾 Database saves handled by main event handler');
 
     return {
       success: true,
       response: text,
       tokensUsed,
-      processingTime,
-      queryId
+      processingTime
     };
   } catch (error: any) {
     const processingTime = Date.now() - startTime;
@@ -233,8 +234,7 @@ export async function generateGeminiResponse(
       success: false,
       response: '',
       processingTime,
-      error: error.message || 'Unknown error occurred',
-      queryId: 'unknown'
+      error: error.message || 'Unknown error occurred'
     };
   }
 }

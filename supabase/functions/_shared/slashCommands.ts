@@ -1,5 +1,5 @@
 // Slash commands helper functions for Supabase Edge Functions
-import { supabase, deleteConversationFromDatabase } from './database.ts';
+import { CentralizedDB, supabase } from './centralized-database.ts';
 import { clearScreenMessages } from './slack.ts';
 
 // Muted users storage (in production, you might want to use a database table)

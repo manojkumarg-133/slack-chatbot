@@ -1,240 +1,844 @@
-import { NextRequest, NextResponse } from 'next/server';import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';import { NextRequest, NextResponse } from 'next/server';import { NextRequest, NextResponse } from 'next/server';import { NextRequest, NextResponse } from 'next/server';
 
-import { import { 
+import { 
 
-  getOrCreateUser,   getOrCreateUser, 
+  getOrCreateUser, import { 
 
-  getOrCreateConversation,  getOrCreateConversation,
+  getOrCreateConversation,
 
-} from '@/lib/database';} from '@/lib/database';
+} from '@/lib/database';  getOrCreateUser, import { import { 
 
-import { import { 
+import { 
 
-  clearConversation,  clearConversation,
+  clearConversation,  getOrCreateConversation,
 
-  createNewConversationForUser,  createNewConversationForUser,
+  createNewConversationForUser,
 
-  deleteConversationData,  deleteConversationData,
+  deleteConversationData,} from '@/lib/database';  getOrCreateUser,   getOrCreateUser, 
 
-  getConversationStats,  getConversationStats,
+  getConversationStats,
 
-} from '@/lib/slashCommands';  muteUser,
+} from '@/lib/slashCommands';import { 
 
-  unmuteUser,
 
-// Helper function to send delayed responses using response_url  isUserMuted
 
-async function sendDelayedResponse(responseUrl: string, message: string, isError = false) {} from '@/lib/slashCommands';
+// Helper function to send delayed responses using response_url  clearConversation,  getOrCreateConversation,  getOrCreateConversation,
+
+async function sendDelayedResponse(responseUrl: string, message: string, isError = false) {
+
+  try {  createNewConversationForUser,
+
+    await fetch(responseUrl, {
+
+      method: 'POST',  deleteConversationData,} from '@/lib/database';} from '@/lib/database';
+
+      headers: {
+
+        'Content-Type': 'application/json',  getConversationStats,
+
+      },
+
+      body: JSON.stringify({} from '@/lib/slashCommands';import { import { 
+
+        response_type: 'ephemeral',
+
+        text: isError ? `❌ ${message}` : message
+
+      }),
+
+    });// Helper function to send delayed responses using response_url  clearConversation,  clearConversation,
+
+  } catch (error) {
+
+    console.error('Error sending delayed response:', error);async function sendDelayedResponse(responseUrl: string, message: string, isError = false) {
+
+  }
+
+}  try {  createNewConversationForUser,  createNewConversationForUser,
+
+
+
+export async function POST(request: NextRequest) {    await fetch(responseUrl, {
 
   try {
 
-    await fetch(responseUrl, {// Helper function to send delayed responses using response_url
-
-      method: 'POST',async function sendDelayedResponse(responseUrl: string, message: string, isError = false) {
-
-      headers: {  try {
-
-        'Content-Type': 'application/json',    await fetch(responseUrl, {
-
-      },      method: 'POST',
-
-      body: JSON.stringify({      headers: {
-
-        response_type: 'ephemeral',        'Content-Type': 'application/json',
-
-        text: isError ? `❌ ${message}` : message      },
-
-      }),      body: JSON.stringify({
-
-    });        response_type: 'ephemeral',
-
-  } catch (error) {        text: isError ? `❌ ${message}` : message
-
-    console.error('Error sending delayed response:', error);      }),
-
-  }    });
-
-}  } catch (error) {
-
-    console.error('Error sending delayed response:', error);
-
-export async function POST(request: NextRequest) {  }
-
-  try {}
-
-    console.log('🔍 Incoming slash command request');
-
-    export async function POST(request: NextRequest) {
-
-    const body = await request.text();  try {
-
-        console.log('🔍 Incoming slash command request');
-
-    if (!body) {    
-
-      console.log('⚠️ Empty request body');    const body = await request.text();
-
-      return NextResponse.json({ ok: true }, { status: 200 });    
-
-    }    if (!body) {
-
-          console.log('⚠️ Empty request body');
-
-    // Parse the form data      return NextResponse.json({ ok: true }, { status: 200 });
-
-    const params = new URLSearchParams(body);    }
-
-    const command = params.get('command');    
-
-    const text = params.get('text') || '';    // Parse the form data
-
-    const userId = params.get('user_id');    const params = new URLSearchParams(body);
-
-    const channelId = params.get('channel_id');    const command = params.get('command');
-
-    const responseUrl = params.get('response_url');    const text = params.get('text') || '';
-
-        const userId = params.get('user_id');
-
-    console.log('📨 Received slash command:', command);    const channelId = params.get('channel_id');
-
-    console.log('👤 User ID:', userId);    const responseUrl = params.get('response_url');
+    console.log('🔍 Incoming slash command request');      method: 'POST',  deleteConversationData,  deleteConversationData,
 
     
 
-    // Verify the request is from Slack    console.log('📨 Received slash command:', command);
+    const body = await request.text();      headers: {
 
-    if (!userId || !channelId || !command || !responseUrl) {    console.log('👤 User ID:', userId);
+    
 
-      console.log('❌ Invalid request - missing required fields');
+    if (!body) {        'Content-Type': 'application/json',  getConversationStats,  getConversationStats,
 
-      return NextResponse.json(    // Verify the request is from Slack
+      console.log('⚠️ Empty request body');
 
-        {     if (!userId || !channelId || !command || !responseUrl) {
+      return NextResponse.json({ ok: true }, { status: 200 });      },
 
-          response_type: "ephemeral",      console.log('❌ Invalid request - missing required fields');
+    }
 
-          text: "❌ Invalid request. Please try again."       return NextResponse.json(
+          body: JSON.stringify({  muteUser,  muteUser,
 
-        },         { 
+    // Parse the form data
 
-        { status: 200 }          response_type: "ephemeral",
+    const params = new URLSearchParams(body);        response_type: 'ephemeral',
 
-      );          text: "❌ Invalid request. Please try again." 
+    const command = params.get('command');
 
-    }        }, 
+    const text = params.get('text') || '';        text: isError ? `❌ ${message}` : message  unmuteUser,  unmuteUser,
 
-        { status: 200 }
+    const userId = params.get('user_id');
 
-    // Handle different commands and respond immediately to avoid timeout      );
+    const channelId = params.get('channel_id');      }),
 
-    switch (command) {    }
+    const responseUrl = params.get('response_url');
 
-      case '/clear':
+        });  isUserMuted  isUserMuted
 
-        setTimeout(async () => {    // Handle different commands and respond immediately to avoid timeout
+    console.log('📨 Received slash command:', command);
 
-          try {    switch (command) {
-
-            const user = await getOrCreateUser(userId);      case '/clear':
-
-            if (!user) {        // Acknowledge immediately (within 3 seconds)
-
-              await sendDelayedResponse(responseUrl, 'Error finding your user account.', true);        setTimeout(async () => {
-
-              return;          try {
-
-            }            const user = await getOrCreateUser(userId);
-
-                        if (!user) {
-
-            const conversation = await getOrCreateConversation(user.id, channelId);              await sendDelayedResponse(responseUrl, 'Error finding your user account.', true);
-
-            if (!conversation) {              return;
-
-              await sendDelayedResponse(responseUrl, 'No conversation found.', true);            }
-
-              return;            
-
-            }            const conversation = await getOrCreateConversation(user.id, channelId);
-
-                        if (!conversation) {
-
-            const stats = await getConversationStats(conversation.id);              await sendDelayedResponse(responseUrl, 'No conversation found.', true);
-
-            if (!stats || stats.messageCount === 0) {              return;
-
-              await sendDelayedResponse(responseUrl, 'ℹ️ No messages to clear. Your chat is already empty!');            }
-
-              return;            
-
-            }            const stats = await getConversationStats(conversation.id);
-
-            if (!stats || stats.messageCount === 0) {
-
-            const result = await clearConversation(conversation.id);              await sendDelayedResponse(responseUrl, 'ℹ️ No messages to clear. Your chat is already empty!');
-
-            if (result) {              return;
-
-              await sendDelayedResponse(responseUrl, `✅ **Screen Cleared!**            }
+    console.log('👤 User ID:', userId);  } catch (error) {
 
 
 
-📊 Cleared ${stats.messageCount} messages from screen view.            const result = await clearConversation(conversation.id);
+    // Verify the request is from Slack    console.error('Error sending delayed response:', error);} from '@/lib/slashCommands';} from '@/lib/slashCommands';
+
+    if (!userId || !channelId || !command || !responseUrl) {
+
+      console.log('❌ Invalid request - missing required fields');  }
+
+      return NextResponse.json(
+
+        { }
+
+          response_type: "ephemeral",
+
+          text: "❌ Invalid request. Please try again." 
+
+        },
+
+        { status: 200 }export async function POST(request: NextRequest) {// Helper function to send delayed responses using response_url// Helper function to send delayed responses using response_url
+
+      );
+
+    }  try {
+
+
+
+    // Handle different commands and respond immediately to avoid timeout    console.log('🔍 Incoming slash command request');async function sendDelayedResponse(responseUrl: string, message: string, isError = false) {async function sendDelayedResponse(responseUrl: string, message: string, isError = false) {
+
+    switch (command) {
+
+      case '/clear':    
+
+        // Clear messages from screen only, keep database intact
+
+        setTimeout(async () => {    const body = await request.text();  try {  try {
+
+          try {
+
+            const user = await getOrCreateUser(userId);    
+
+            const conversation = await getOrCreateConversation(user.id, channelId);
+
+    if (!body) {    await fetch(responseUrl, {    await fetch(responseUrl, {
+
+            const stats = await getConversationStats(conversation.id);
+
+            if (!stats || stats.messageCount === 0) {      console.log('⚠️ Empty request body');
+
+              await sendDelayedResponse(responseUrl, 'ℹ️ No messages to clear. Your chat is already empty!');
+
+              return;      return NextResponse.json({ ok: true }, { status: 200 });      method: 'POST',      method: 'POST',
+
+            }
+
+    }
+
+            const result = await clearConversation(conversation.id, false); // false = screen only
+
+                      headers: {      headers: {
 
             if (result) {
 
-💾 Database kept intact - conversation continues with same ID.`);              await sendDelayedResponse(responseUrl, `✅ **Chat Cleared!**
+              await sendDelayedResponse(responseUrl, `🧹 **Chat Cleared!**    // Parse the form data
 
-              console.log(`✅ User ${userId} cleared screen for conversation ${conversation.id}`);
 
-            } else {📊 Cleared ${stats.messageCount} messages from this conversation.
+
+📊 Cleared ${stats.messageCount} messages from this conversation.    const params = new URLSearchParams(body);        'Content-Type': 'application/json',        'Content-Type': 'application/json',
+
+
+
+Your conversation history has been reset. Future messages will start a fresh conversation with context.`);    const command = params.get('command');
+
+              console.log(`✅ User ${userId} cleared conversation ${conversation.id}`);
+
+            } else {    const text = params.get('text') || '';      },      },
 
               await sendDelayedResponse(responseUrl, 'Failed to clear chat. Please try again.', true);
 
-            }Your conversation history has been reset. Future messages will start a fresh conversation with context.`);
+            }    const userId = params.get('user_id');
 
-          } catch (error) {              console.log(`✅ User ${userId} cleared conversation ${conversation.id}`);
+          } catch (error) {
 
-            console.error('❌ Error in /clear command:', error);            } else {
+            console.error('❌ Error in /clear command:', error);    const channelId = params.get('channel_id');      body: JSON.stringify({      body: JSON.stringify({
 
-            await sendDelayedResponse(responseUrl, 'An error occurred while clearing the chat.', true);              await sendDelayedResponse(responseUrl, 'Failed to clear chat. Please try again.', true);
+            await sendDelayedResponse(responseUrl, 'An error occurred while clearing the chat.', true);
 
-          }            }
+          }    const responseUrl = params.get('response_url');
 
-        }, 50);          } catch (error) {
+        }, 50);
 
-            console.error('❌ Error in /clear command:', error);
-
-        return NextResponse.json({            await sendDelayedResponse(responseUrl, 'An error occurred while clearing the chat.', true);
-
-          response_type: "ephemeral",          }
-
-          text: "🔄 Clearing messages from screen..."        }, 50); // Reduced delay to respond faster
-
-        }, { status: 200 });
+            response_type: 'ephemeral',        response_type: 'ephemeral',
 
         return NextResponse.json({
 
-      case '/delete':          response_type: "ephemeral",
+          response_type: "ephemeral",    console.log('📨 Received slash command:', command);
 
-        setTimeout(async () => {          text: "🔄 Clearing your conversation history..."
+          text: "🔄 Clearing your conversation history..."
 
-          try {        }, { status: 200 });
+        }, { status: 200 });    console.log('👤 User ID:', userId);        text: isError ? `❌ ${message}` : message
+
+
+
+      case '/new-chat':
+
+        setTimeout(async () => {
+
+          try {    // Verify the request is from Slack      }),  } catch (error) {        text: isError ? `❌ ${message}` : message
 
             const user = await getOrCreateUser(userId);
 
-            if (!user) {      case '/new-chat':
+            const newConversationId = await createNewConversationForUser(user.id, channelId);    if (!userId || !channelId || !command || !responseUrl) {
 
-              await sendDelayedResponse(responseUrl, 'Error finding your user account.', true);        setTimeout(async () => {
+            
 
-              return;          try {
+            if (newConversationId) {      console.log('❌ Invalid request - missing required fields');    });
+
+              await sendDelayedResponse(responseUrl, `🆕 **New Chat Started!**
+
+      return NextResponse.json(
+
+🆔 Conversation ID: \`${newConversationId}\`
+
+        {   } catch (error) {    console.error('Error sending delayed response:', error);      }),
+
+Your conversation history has been reset. This is now a fresh conversation with the AI assistant.`);
+
+              console.log(`✅ User ${userId} started new conversation ${newConversationId}`);          response_type: "ephemeral",
+
+            } else {
+
+              await sendDelayedResponse(responseUrl, 'Failed to start new chat. Please try again.', true);          text: "❌ Invalid request. Please try again."     console.error('Error sending delayed response:', error);
+
+            }
+
+          } catch (error) {        },
+
+            console.error('❌ Error in /new-chat command:', error);
+
+            await sendDelayedResponse(responseUrl, 'An error occurred while starting new chat.', true);        { status: 200 }  }  }    });
+
+          }
+
+        }, 50);      );
+
+
+
+        return NextResponse.json({    }}
+
+          response_type: "ephemeral",
+
+          text: "🔄 Starting a new chat conversation..."
+
+        }, { status: 200 });
+
+    // Handle different commands and respond immediately to avoid timeout}  } catch (error) {
+
+      case '/delete':
+
+        setTimeout(async () => {    switch (command) {
+
+          try {
+
+            const user = await getOrCreateUser(userId);      case '/clear':export async function POST(request: NextRequest) {
+
+            const conversation = await getOrCreateConversation(user.id, channelId);
+
+        // Clear messages from screen only, keep database intact
+
+            const stats = await getConversationStats(conversation.id);
+
+            const success = await deleteConversationData(conversation.id);        setTimeout(async () => {  try {    console.error('Error sending delayed response:', error);
+
+            
+
+            if (success) {          try {
+
+              await sendDelayedResponse(responseUrl, `🗑️ **Conversation Deleted**
+
+            const user = await getOrCreateUser(userId);    console.log('🔍 Incoming slash command request');
+
+🗑️ Deleted from screen and database:
+
+• ${stats?.messageCount || 0} messages            const conversation = await getOrCreateConversation(user.id, channelId);
+
+• ${stats?.responseCount || 0} responses  
+
+• ${stats?.reactionCount || 0} reactions    export async function POST(request: NextRequest) {  }
+
+
+
+Your conversation has been completely removed.`);            const stats = await getConversationStats(conversation.id);
+
+              console.log(`✅ User ${userId} deleted conversation data`);
+
+            } else {            if (!stats || stats.messageCount === 0) {    const body = await request.text();
+
+              await sendDelayedResponse(responseUrl, 'Failed to delete conversation. Please try again.', true);
+
+            }              await sendDelayedResponse(responseUrl, 'ℹ️ No messages to clear. Your chat is already empty!');
+
+          } catch (error) {
+
+            console.error('❌ Error in /delete command:', error);              return;      try {}
+
+            await sendDelayedResponse(responseUrl, 'An error occurred while deleting the conversation.', true);
+
+          }            }
+
+        }, 50);
+
+    if (!body) {
+
+        return NextResponse.json({
+
+          response_type: "ephemeral",            const result = await clearConversation(conversation.id, false); // false = screen only
+
+          text: "🗑️ Deleting conversation from screen and database..."
+
+        }, { status: 200 });                  console.log('⚠️ Empty request body');    console.log('🔍 Incoming slash command request');
+
+
+
+      case '/help':            if (result) {
+
+        return NextResponse.json({
+
+          response_type: "ephemeral",              await sendDelayedResponse(responseUrl, `🧹 **Chat Cleared!**      return NextResponse.json({ ok: true }, { status: 200 });
+
+          text: `🤖 **Zen-AI Bot Commands**
+
+
+
+**Available Commands:**
+
+• \`/clear\` - Clear messages from screen (keeps database)📊 Cleared ${stats.messageCount} messages from this conversation.    }    export async function POST(request: NextRequest) {
+
+• \`/delete\` - Delete conversation from screen AND database  
+
+• \`/new-chat\` - Start a fresh conversation with new ID
+
+• \`/help\` - Show this help message
+
+Your conversation history has been reset. Future messages will start a fresh conversation with context.`);    
+
+**Features:**
+
+✅ Multi-language support (responds in your language)              console.log(`✅ User ${userId} cleared conversation ${conversation.id}`);
+
+✅ Conversation history and context
+
+✅ Emoji reaction sentiment analysis            } else {    // Parse the form data    const body = await request.text();  try {
+
+✅ Works in channels and DMs
+
+              await sendDelayedResponse(responseUrl, 'Failed to clear chat. Please try again.', true);
+
+Need help? Just @mention me with your question! 💬`
+
+        }, { status: 200 });            }    const params = new URLSearchParams(body);
+
+
+
+      default:          } catch (error) {
+
+        return NextResponse.json({
+
+          response_type: "ephemeral",            console.error('❌ Error in /clear command:', error);    const command = params.get('command');        console.log('🔍 Incoming slash command request');
+
+          text: `❓ **Unknown Command: \`${command}\`**
+
+            await sendDelayedResponse(responseUrl, 'An error occurred while clearing the chat.', true);
+
+Available commands:
+
+• \`/clear\` - Clear messages from screen only          }    const text = params.get('text') || '';
+
+• \`/delete\` - Delete conversation completely
+
+• \`/new-chat\` - Start a new conversation        }, 50);
+
+• \`/help\` - Show help message`
+
+        }, { status: 200 });    const userId = params.get('user_id');    if (!body) {    
+
+    }
+
+        return NextResponse.json({
+
+  } catch (error) {
+
+    console.error('❌ Error handling slash command:', error);          response_type: "ephemeral",    const channelId = params.get('channel_id');
+
+    return NextResponse.json({
+
+      response_type: "ephemeral",           text: "🔄 Clearing your conversation history..."
+
+      text: "❌ An unexpected error occurred. Please try again."
+
+    }, { status: 200 });        }, { status: 200 });    const responseUrl = params.get('response_url');      console.log('⚠️ Empty request body');    const body = await request.text();
+
+  }
+
+}
+
+
+
+// Handle GET requests (Slack sometimes sends these for verification)      case '/new-chat':    
+
+export async function GET() {
+
+  return NextResponse.json({ message: 'Slash commands endpoint is working' }, { status: 200 });        // Clear screen and create new conversation ID
+
+}
+        setTimeout(async () => {    console.log('📨 Received slash command:', command);      return NextResponse.json({ ok: true }, { status: 200 });    
+
+          try {
+
+            const user = await getOrCreateUser(userId);    console.log('👤 User ID:', userId);
+
+            const newConversationId = await createNewConversationForUser(user.id, channelId);
+
+                }    if (!body) {
+
+            if (newConversationId) {
+
+              await sendDelayedResponse(responseUrl, `🆕 **New Chat Started!**    // Verify the request is from Slack
+
+
+
+🆔 Conversation ID: \`${newConversationId}\`    if (!userId || !channelId || !command || !responseUrl) {          console.log('⚠️ Empty request body');
+
+
+
+Your conversation history has been reset. This is now a fresh conversation with the AI assistant.`);      console.log('❌ Invalid request - missing required fields');
+
+              console.log(`✅ User ${userId} started new conversation ${newConversationId}`);
+
+            } else {      return NextResponse.json(    // Parse the form data      return NextResponse.json({ ok: true }, { status: 200 });
+
+              await sendDelayedResponse(responseUrl, 'Failed to start new chat. Please try again.', true);
+
+            }        { 
+
+          } catch (error) {
+
+            console.error('❌ Error in /new-chat command:', error);          response_type: "ephemeral",    const params = new URLSearchParams(body);    }
+
+            await sendDelayedResponse(responseUrl, 'An error occurred while starting new chat.', true);
+
+          }          text: "❌ Invalid request. Please try again." 
+
+        }, 50);
+
+        },    const command = params.get('command');    
+
+        return NextResponse.json({
+
+          response_type: "ephemeral",        { status: 200 }
+
+          text: "🔄 Starting a new chat conversation..."
+
+        }, { status: 200 });      );    const text = params.get('text') || '';    // Parse the form data
+
+
+
+      case '/delete':    }
+
+        // Delete everything: screen messages AND database records
+
+        setTimeout(async () => {    const userId = params.get('user_id');    const params = new URLSearchParams(body);
+
+          try {
+
+            const user = await getOrCreateUser(userId);    // Handle different commands and respond immediately to avoid timeout
+
+            const conversation = await getOrCreateConversation(user.id, channelId);
+
+    switch (command) {    const channelId = params.get('channel_id');    const command = params.get('command');
+
+            const stats = await getConversationStats(conversation.id);
+
+            const success = await deleteConversationData(conversation.id);      case '/clear':
+
+            
+
+            if (success) {        // Clear messages from screen only, keep database intact    const responseUrl = params.get('response_url');    const text = params.get('text') || '';
+
+              await sendDelayedResponse(responseUrl, `🗑️ **Conversation Deleted**
+
+        setTimeout(async () => {
+
+🗑️ Deleted from screen and database:
+
+• ${stats?.messageCount || 0} messages          try {        const userId = params.get('user_id');
+
+• ${stats?.responseCount || 0} responses  
+
+• ${stats?.reactionCount || 0} reactions            const user = await getOrCreateUser(userId);
+
+
+
+Your conversation has been completely removed.`);            const conversation = await getOrCreateConversation(user.id, channelId);    console.log('📨 Received slash command:', command);    const channelId = params.get('channel_id');
+
+              console.log(`✅ User ${userId} deleted conversation data`);
+
+            } else {
+
+              await sendDelayedResponse(responseUrl, 'Failed to delete conversation. Please try again.', true);
+
+            }            const stats = await getConversationStats(conversation.id);    console.log('👤 User ID:', userId);    const responseUrl = params.get('response_url');
+
+          } catch (error) {
+
+            console.error('❌ Error in /delete command:', error);            if (!stats || stats.messageCount === 0) {
+
+            await sendDelayedResponse(responseUrl, 'An error occurred while deleting the conversation.', true);
+
+          }              await sendDelayedResponse(responseUrl, 'ℹ️ No messages to clear. Your chat is already empty!');    
+
+        }, 50);
+
+              return;
+
+        return NextResponse.json({
+
+          response_type: "ephemeral",            }    // Verify the request is from Slack    console.log('📨 Received slash command:', command);
+
+          text: "🗑️ Deleting conversation from screen and database..."
+
+        }, { status: 200 });
+
+
+
+      case '/help':            const result = await clearConversation(conversation.id, false); // false = screen only    if (!userId || !channelId || !command || !responseUrl) {    console.log('👤 User ID:', userId);
+
+        return NextResponse.json({
+
+          response_type: "ephemeral",            
+
+          text: `🤖 **Zen-AI Bot Commands**
+
+            if (result) {      console.log('❌ Invalid request - missing required fields');
+
+**Available Commands:**
+
+• \`/clear\` - Clear messages from screen (keeps database)              await sendDelayedResponse(responseUrl, `🧹 **Chat Cleared!**
+
+• \`/delete\` - Delete conversation from screen AND database  
+
+• \`/new-chat\` - Start a fresh conversation with new ID      return NextResponse.json(    // Verify the request is from Slack
+
+• \`/help\` - Show this help message
+
+📊 Cleared ${stats.messageCount} messages from this conversation.
+
+**Features:**
+
+✅ Multi-language support (responds in your language)        {     if (!userId || !channelId || !command || !responseUrl) {
+
+✅ Conversation history and context
+
+✅ Emoji reaction sentiment analysisYour conversation history has been reset. Future messages will start a fresh conversation with context.`);
+
+✅ Works in channels and DMs
+
+              console.log(`✅ User ${userId} cleared conversation ${conversation.id}`);          response_type: "ephemeral",      console.log('❌ Invalid request - missing required fields');
+
+Need help? Just @mention me with your question! 💬`
+
+        }, { status: 200 });            } else {
+
+
+
+      default:              await sendDelayedResponse(responseUrl, 'Failed to clear chat. Please try again.', true);          text: "❌ Invalid request. Please try again."       return NextResponse.json(
+
+        return NextResponse.json({
+
+          response_type: "ephemeral",            }
+
+          text: `❓ **Unknown Command: \`${command}\`**
+
+          } catch (error) {        },         { 
+
+Available commands:
+
+• \`/clear\` - Clear messages from screen only            console.error('❌ Error in /clear command:', error);
+
+• \`/delete\` - Delete conversation completely
+
+• \`/new-chat\` - Start a new conversation            await sendDelayedResponse(responseUrl, 'An error occurred while clearing the chat.', true);        { status: 200 }          response_type: "ephemeral",
+
+• \`/help\` - Show help message`
+
+        }, { status: 200 });          }
+
+    }
+
+        }, 50);      );          text: "❌ Invalid request. Please try again." 
+
+  } catch (error) {
+
+    console.error('❌ Error handling slash command:', error);
+
+    return NextResponse.json({
+
+      response_type: "ephemeral",         return NextResponse.json({    }        }, 
+
+      text: "❌ An unexpected error occurred. Please try again."
+
+    }, { status: 200 });          response_type: "ephemeral",
+
+  }
+
+}          text: "🔄 Clearing your conversation history..."        { status: 200 }
+
+
+
+// Handle GET requests (Slack sometimes sends these for verification)        }, { status: 200 });
+
+export async function GET() {
+
+  return NextResponse.json({ message: 'Slash commands endpoint is working' }, { status: 200 });    // Handle different commands and respond immediately to avoid timeout      );
+
+}
+      case '/new-chat':
+
+        // Clear screen and create new conversation ID    switch (command) {    }
+
+        setTimeout(async () => {
+
+          try {      case '/clear':
+
+            const user = await getOrCreateUser(userId);
+
+            const newConversationId = await createNewConversationForUser(user.id, channelId);        setTimeout(async () => {    // Handle different commands and respond immediately to avoid timeout
+
+            
+
+            if (newConversationId) {          try {    switch (command) {
+
+              await sendDelayedResponse(responseUrl, `🆕 **New Chat Started!**
+
+            const user = await getOrCreateUser(userId);      case '/clear':
+
+🆔 Conversation ID: \`${newConversationId}\`
+
+            if (!user) {        // Acknowledge immediately (within 3 seconds)
+
+Your conversation history has been reset. This is now a fresh conversation with the AI assistant.`);
+
+              console.log(`✅ User ${userId} started new conversation ${newConversationId}`);              await sendDelayedResponse(responseUrl, 'Error finding your user account.', true);        setTimeout(async () => {
+
+            } else {
+
+              await sendDelayedResponse(responseUrl, 'Failed to start new chat. Please try again.', true);              return;          try {
+
+            }
+
+          } catch (error) {            }            const user = await getOrCreateUser(userId);
+
+            console.error('❌ Error in /new-chat command:', error);
+
+            await sendDelayedResponse(responseUrl, 'An error occurred while starting new chat.', true);                        if (!user) {
+
+          }
+
+        }, 50);            const conversation = await getOrCreateConversation(user.id, channelId);              await sendDelayedResponse(responseUrl, 'Error finding your user account.', true);
+
+
+
+        return NextResponse.json({            if (!conversation) {              return;
+
+          response_type: "ephemeral",
+
+          text: "🔄 Starting a new chat conversation..."              await sendDelayedResponse(responseUrl, 'No conversation found.', true);            }
+
+        }, { status: 200 });
+
+              return;            
+
+      case '/delete':
+
+        // Delete everything: screen messages AND database records            }            const conversation = await getOrCreateConversation(user.id, channelId);
+
+        setTimeout(async () => {
+
+          try {                        if (!conversation) {
+
+            const user = await getOrCreateUser(userId);
+
+            const conversation = await getOrCreateConversation(user.id, channelId);            const stats = await getConversationStats(conversation.id);              await sendDelayedResponse(responseUrl, 'No conversation found.', true);
+
+
+
+            const stats = await getConversationStats(conversation.id);            if (!stats || stats.messageCount === 0) {              return;
+
+            const success = await deleteConversationData(conversation.id);
+
+                          await sendDelayedResponse(responseUrl, 'ℹ️ No messages to clear. Your chat is already empty!');            }
+
+            if (success) {
+
+              await sendDelayedResponse(responseUrl, `🗑️ **Conversation Deleted**              return;            
+
+
+
+🗑️ Deleted from screen and database:            }            const stats = await getConversationStats(conversation.id);
+
+• ${stats?.messageCount || 0} messages
+
+• ${stats?.responseCount || 0} responses              if (!stats || stats.messageCount === 0) {
+
+• ${stats?.reactionCount || 0} reactions
+
+            const result = await clearConversation(conversation.id);              await sendDelayedResponse(responseUrl, 'ℹ️ No messages to clear. Your chat is already empty!');
+
+Your conversation has been completely removed.`);
+
+              console.log(`✅ User ${userId} deleted conversation data`);            if (result) {              return;
+
+            } else {
+
+              await sendDelayedResponse(responseUrl, 'Failed to delete conversation. Please try again.', true);              await sendDelayedResponse(responseUrl, `✅ **Screen Cleared!**            }
+
+            }
+
+          } catch (error) {
+
+            console.error('❌ Error in /delete command:', error);
+
+            await sendDelayedResponse(responseUrl, 'An error occurred while deleting the conversation.', true);📊 Cleared ${stats.messageCount} messages from screen view.            const result = await clearConversation(conversation.id);
+
+          }
+
+        }, 50);            if (result) {
+
+
+
+        return NextResponse.json({💾 Database kept intact - conversation continues with same ID.`);              await sendDelayedResponse(responseUrl, `✅ **Chat Cleared!**
+
+          response_type: "ephemeral",
+
+          text: "🗑️ Deleting conversation from screen and database..."              console.log(`✅ User ${userId} cleared screen for conversation ${conversation.id}`);
+
+        }, { status: 200 });
+
+            } else {📊 Cleared ${stats.messageCount} messages from this conversation.
+
+      case '/help':
+
+        return NextResponse.json({              await sendDelayedResponse(responseUrl, 'Failed to clear chat. Please try again.', true);
+
+          response_type: "ephemeral",
+
+          text: `🤖 **Zen-AI Bot Commands**            }Your conversation history has been reset. Future messages will start a fresh conversation with context.`);
+
+
+
+**Available Commands:**          } catch (error) {              console.log(`✅ User ${userId} cleared conversation ${conversation.id}`);
+
+• \`/clear\` - Clear messages from screen (keeps database)
+
+• \`/delete\` - Delete conversation from screen AND database              console.error('❌ Error in /clear command:', error);            } else {
+
+• \`/new-chat\` - Start a fresh conversation with new ID
+
+• \`/help\` - Show this help message            await sendDelayedResponse(responseUrl, 'An error occurred while clearing the chat.', true);              await sendDelayedResponse(responseUrl, 'Failed to clear chat. Please try again.', true);
+
+
+
+**Features:**          }            }
+
+✅ Multi-language support (responds in your language)
+
+✅ Conversation history and context        }, 50);          } catch (error) {
+
+✅ Emoji reaction sentiment analysis
+
+✅ Works in channels and DMs            console.error('❌ Error in /clear command:', error);
+
+
+
+Need help? Just @mention me with your question! 💬`        return NextResponse.json({            await sendDelayedResponse(responseUrl, 'An error occurred while clearing the chat.', true);
+
+        }, { status: 200 });
+
+          response_type: "ephemeral",          }
+
+      default:
+
+        return NextResponse.json({          text: "🔄 Clearing messages from screen..."        }, 50); // Reduced delay to respond faster
+
+          response_type: "ephemeral",
+
+          text: `❓ **Unknown Command: \`${command}\`**        }, { status: 200 });
+
+
+
+Available commands:        return NextResponse.json({
+
+• \`/clear\` - Clear messages from screen only
+
+• \`/delete\` - Delete conversation completely      case '/delete':          response_type: "ephemeral",
+
+• \`/new-chat\` - Start a new conversation
+
+• \`/help\` - Show help message`        setTimeout(async () => {          text: "🔄 Clearing your conversation history..."
+
+        }, { status: 200 });
+
+    }          try {        }, { status: 200 });
+
+
+
+  } catch (error) {            const user = await getOrCreateUser(userId);
+
+    console.error('❌ Error handling slash command:', error);
+
+    return NextResponse.json({            if (!user) {      case '/new-chat':
+
+      response_type: "ephemeral", 
+
+      text: "❌ An unexpected error occurred. Please try again."              await sendDelayedResponse(responseUrl, 'Error finding your user account.', true);        setTimeout(async () => {
+
+    }, { status: 200 });
+
+  }              return;          try {
+
+}
 
             }            const user = await getOrCreateUser(userId);
 
-            if (!user) {
+// Handle GET requests (Slack sometimes sends these for verification)
 
-            const conversation = await getOrCreateConversation(user.id, channelId);              await sendDelayedResponse(responseUrl, 'Error finding your user account.', true);
+export async function GET() {            if (!user) {
+
+  return NextResponse.json({ message: 'Slash commands endpoint is working' }, { status: 200 });
+
+}            const conversation = await getOrCreateConversation(user.id, channelId);              await sendDelayedResponse(responseUrl, 'Error finding your user account.', true);
 
             if (!conversation) {              return;
 

@@ -5,20 +5,165 @@
 // Supports: Slack, Discord, WhatsApp, Telegram, Twitch
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-import type {
-  User, UserInsert, UserUpdate,
-  Conversation, ConversationInsert, ConversationUpdate,
-  UserQuery, UserQueryInsert,
-  BotResponse, BotResponseInsert,
-  MessageReaction, MessageReactionInsert,
-  PlatformConfig,
-  PlatformType,
-  ConversationMessage,
-  SlackUserMetadata,
-  SlackConversationMetadata,
-  SlackMessageMetadata,
-  CentralizedDatabase
-} from '../../../src/types/centralized-database.types.ts';
+
+// Type definitions (inline for Edge Functions)
+type PlatformType = 'slack' | 'discord' | 'whatsapp' | 'telegram' | 'twitch';
+type ConversationStatus = 'active' | 'archived' | 'deleted';
+type MessageStatus = 'sent' | 'delivered' | 'read' | 'failed';
+
+interface User {
+  id: string;
+  platform: PlatformType;
+  platform_user_id: string;
+  username?: string;
+  display_name?: string;
+  email?: string;
+  phone_number?: string;
+  avatar_url?: string;
+  language_code: string;
+  timezone?: string;
+  is_bot: boolean;
+  is_active: boolean;
+  notifications_enabled: boolean;
+  first_seen_at: string;
+  last_seen_at: string;
+  created_at: string;
+  updated_at: string;
+  platform_metadata: any;
+}
+
+type UserInsert = Omit<User, 'id' | 'created_at' | 'updated_at'>;
+type UserUpdate = Partial<Omit<User, 'id' | 'platform' | 'platform_user_id'>>;
+
+interface Conversation {
+  id: string;
+  platform: PlatformType;
+  user_id: string;
+  channel_id?: string;
+  channel_name?: string;
+  thread_id?: string;
+  is_group_chat: boolean;
+  is_dm: boolean;
+  status: ConversationStatus;
+  title?: string;
+  last_activity_at: string;
+  message_count: number;
+  created_at: string;
+  updated_at: string;
+  archived_at?: string;
+  platform_metadata: any;
+}
+
+type ConversationInsert = Omit<Conversation, 'id' | 'created_at' | 'updated_at'>;
+type ConversationUpdate = Partial<Omit<Conversation, 'id' | 'platform' | 'user_id'>>;
+
+interface UserQuery {
+  id: string;
+  conversation_id: string;
+  user_id: string;
+  content: string;
+  platform_message_id?: string;
+  has_attachments: boolean;
+  attachment_urls?: string[];
+  message_type: string;
+  status: MessageStatus;
+  created_at: string;
+  platform_metadata: any;
+}
+
+type UserQueryInsert = Omit<UserQuery, 'id' | 'created_at'>;
+
+interface BotResponse {
+  id: string;
+  query_id: string;
+  conversation_id: string;
+  content: string;
+  platform_message_id?: string;
+  model_used: string;
+  tokens_used?: number;
+  prompt_tokens?: number;
+  completion_tokens?: number;
+  processing_time_ms?: number;
+  has_attachments: boolean;
+  attachment_urls?: string[];
+  response_type: string;
+  error_message?: string;
+  error_code?: string;
+  retry_count: number;
+  status: MessageStatus;
+  created_at: string;
+  platform_metadata: any;
+}
+
+type BotResponseInsert = Omit<BotResponse, 'id' | 'created_at'>;
+
+interface MessageReaction {
+  id: string;
+  response_id: string;
+  user_id: string;
+  reaction_name: string;
+  reaction_unicode?: string;
+  platform: PlatformType;
+  created_at: string;
+  removed_at?: string;
+}
+
+type MessageReactionInsert = Omit<MessageReaction, 'id' | 'created_at'>;
+
+interface PlatformConfig {
+  id: string;
+  platform: PlatformType;
+  is_enabled: boolean;
+  webhook_url?: string;
+  api_base_url?: string;
+  rate_limit_per_minute: number;
+  rate_limit_per_hour: number;
+  supports_threads: boolean;
+  supports_reactions: boolean;
+  supports_attachments: boolean;
+  supports_rich_media: boolean;
+  config_data: any;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ConversationMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  created_at: string;
+  metadata?: any;
+}
+
+interface SlackUserMetadata {
+  team_id: string;
+  enterprise_id?: string;
+  is_enterprise_install: boolean;
+  is_admin: boolean;
+  is_owner: boolean;
+  is_primary_owner: boolean;
+  is_restricted: boolean;
+  is_ultra_restricted: boolean;
+  is_stranger: boolean;
+  is_app_user: boolean;
+  has_2fa: boolean;
+  locale?: string;
+  tz?: string;
+  tz_label?: string;
+  tz_offset?: number;
+}
+
+interface SlackConversationMetadata {
+  team: string;
+  channel_type: 'im' | 'mpim' | 'private_channel' | 'public_channel';
+  is_archived: boolean;
+  is_general: boolean;
+  is_starred: boolean;
+  is_member: boolean;
+  topic?: string;
+  purpose?: string;
+  num_members?: number;
+  previous_names?: string[];
+}
 
 // ============================================
 // SUPABASE CLIENT INITIALIZATION
@@ -27,7 +172,7 @@ import type {
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-export const supabase = createClient<CentralizedDatabase>(
+export const supabase = createClient(
   supabaseUrl, 
   supabaseServiceRoleKey, 
   {
