@@ -69,11 +69,7 @@ slack-gemini-bot/
 │   │   │   ├── slack/events/          # Slack event handler
 │   │   │   └── analytics/             # Analytics endpoints
 │   │   └── ...
-│   ├── lib/
-│   │   ├── supabaseClient.ts         # Supabase client
-│   │   ├── database.ts               # Database helpers
-│   │   ├── gemini.ts                 # Gemini AI helpers
-│   │   └── slack.ts                  # Slack helpers
+│   ├── lib/                       # (Empty - all functionality moved to edge functions)
 │   └── types/
 │       └── database.types.ts         # TypeScript types
 ├── supabase/
