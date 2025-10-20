@@ -61,9 +61,11 @@ export async function createNewConversationForUser(
     const { data, error } = await supabase
       .from('conversations')
       .insert([{
+        platform: 'slack',
         user_id: userId,
-        slack_channel_id: channelId,
-        conversation_title: 'New Chat Session'
+        channel_id: channelId,
+        title: 'New Chat Session',
+        updated_at: new Date().toISOString()
       }])
       .select('id')
       .single();

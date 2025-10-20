@@ -1144,7 +1144,7 @@ Need help? Just @mention me with your question! 💬`
 
 �💬 **Messages:** ${stats.messageCount} total
 🗓️ **Created:** ${new Date(conversation.created_at).toLocaleDateString()}
-📝 **Title:** ${conversation.conversation_title || 'Untitled'}
+📝 **Title:** ${conversation.title || 'Untitled'}
 🆔 **Conversation ID:** \`${conversation.id}\`
 
 ${stats.messageCount > 0 ? '✅ Active conversation with history' : '📝 New conversation - no messages yet'}`);

@@ -1,72 +1,61 @@
-# 🔧 FIXES APPLIED - Message Status & Language Issues
+# Fixes Applied to Slack Gemini Bot
 
-## ✅ **Issue 1: "Generating response..." messages disappearing**
+## Issue: Bot Not Responding to Mentions in Channels
 
-### **Problem:**
-- Status messages showing bot was working were disappearing
-- Users couldn't see that the bot was actively processing their request
+### Problem
+The bot was only responding to direct messages but not to mentions in channels (e.g., `@BotName hello`). This was because the Slack events handler was only processing `message` events but not `app_mention` events.
 
-### **Solution:**
-- Added persistent status message: "⚡ Generating response..."
-- Status message now gets **updated** with the actual response instead of disappearing
-- Used `updateSlackMessage()` to replace the status message with the final response
-- Added fallback to send new message if update fails
+### Solution
+1. **Updated `slack-events-centralized` Edge Function**:
+   - Added handling for `app_mention` events in addition to existing `message` events
+   - Created a shared `processSlackMessage` function to avoid code duplication
+   - Added logic to strip the bot mention from messages (e.g., `<@BOT_ID> hello` → `hello`)
+   - Both event types now use the same processing logic
 
-### **Code Changes:**
-```typescript
-// Send initial status message
-const statusMessage = await sendSlackMessage(channelId, "⚡ Generating response...", threadTs);
+2. **Updated Deployment Scripts**:
+   - Added documentation to both `deploy.sh` and `deploy.bat` about required Slack event subscriptions
+   - Added information about required OAuth scopes
 
-// Later, update it with the actual response
-if (statusMessageTs) {
-  slackResponse = await updateSlackMessage(channelId, statusMessageTs, aiResponse.response);
-} else {
-  slackResponse = await sendSlackMessage(channelId, aiResponse.response, threadTs);
-}
-```
+### Technical Details
 
-## ✅ **Issue 2: Language detection error (responding in German instead of English)**
+#### New Event Handling
+The updated function now handles both:
+- `message` events (direct messages)
+- `app_mention` events (mentions in channels)
 
-### **Problem:**
-- Bot was detecting language from the **entire conversation history** instead of just the current user message
-- Conversation history contained German text, so bot responded in German even when user wrote in English
+#### Mention Parsing
+When processing `app_mention` events, the bot now:
+1. Receives the full message text (e.g., `<@U1234567890> hello there`)
+2. Strips the mention prefix using regex: `^<@[A-Z0-9]+>\s*`
+3. Processes only the actual query text (e.g., `hello there`)
 
-### **Solution:**
-- Modified `generateGeminiResponse()` to accept separate parameter for language detection
-- Now detects language only from the **current user message**, not the full prompt
-- Enhanced system prompt to be more explicit about language requirements
-- Added better logging to show what text was used for language detection
+#### Code Structure
+- Created a shared `processSlackMessage` function to handle the common processing logic
+- Both event types call this function to avoid code duplication
+- Maintains all existing functionality while adding the new mention support
 
-### **Code Changes:**
-```typescript
-// Function now accepts current message for language detection
-const aiResponse = await generateGeminiResponse(
-  fullPrompt,           // Full context for response generation
-  conversation.id, 
-  userId, 
-  'gemini-2.5-flash', 
-  messageText          // Current message only for language detection
-);
+### Required Actions
+After deploying these changes, you need to:
 
-// Enhanced system prompt
-const systemPrompt = `You are a helpful AI assistant in a Slack workspace. 
+1. **Deploy the updated functions**:
+   ```bash
+   ./deploy.sh
+   # or on Windows:
+   deploy.bat
+   ```
 
-IMPORTANT: The user's current message is in ${detection.language}. You MUST respond in the same language as the user's CURRENT message, which is ${detection.language}. 
+2. **Update Slack App Configuration**:
+   - Ensure Event Subscriptions include `app_mention` events
+   - Verify OAuth scopes include `app_mentions:read`
 
-If the detected language is "english", respond in English only.
-If you detect any other language, respond in that specific language.`;
-```
+3. **Test the bot**:
+   - Try mentioning the bot in a channel: `@BotName hello`
+   - Send a direct message to the bot
+   - Both should now work correctly
 
-## 🎯 **Expected Results:**
+### Files Modified
+- `supabase/functions/slack-events-centralized/index.ts` - Main fix
+- `deploy.sh` - Updated documentation
+- `deploy.bat` - Updated documentation
 
-1. **Status Messages:** Users will now see "⚡ Generating response..." which smoothly transforms into the actual bot response
-2. **Language Accuracy:** Bot will respond in the same language as the user's **current message**, ignoring previous conversation languages
-3. **Better UX:** Clear feedback that bot is working + accurate language responses
-
-## 🚀 **To Deploy:**
-
-```bash
-supabase functions deploy slack-events-centralized
-```
-
-The fixes address both visual feedback and language accuracy issues shown in your screenshot! 🎉
+The bot should now respond correctly when mentioned in channels as well as in direct messages.

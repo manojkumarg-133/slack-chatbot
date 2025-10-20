@@ -375,6 +375,7 @@ export async function getOrCreateConversation(
       is_dm: conversationData?.is_dm || (!channelId || channelId.startsWith('D')),
       status: 'active',
       title: conversationData?.title || null,
+      last_activity_at: new Date().toISOString(), // Make sure new conversation is most recent
       platform_metadata: conversationData?.platform_metadata || {}
     };
 

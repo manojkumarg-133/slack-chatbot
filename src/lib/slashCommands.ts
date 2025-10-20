@@ -12,7 +12,7 @@ export async function clearConversation(conversationId: string): Promise<boolean
   try {
     const { error } = await supabase
       .from('conversations')
-      .update({ conversation_title: 'Cleared Chat' })
+      .update({ title: 'Cleared Chat' })
       .eq('id', conversationId);
 
     return !error;
@@ -33,9 +33,11 @@ export async function createNewConversationForUser(
     const { data, error } = await supabase
       .from('conversations')
       .insert({
+        platform: 'slack',
         user_id: userId,
-        slack_channel_id: slackChannelId,
-        conversation_title: 'New Chat'
+        channel_id: slackChannelId,
+        title: 'New Chat',
+        updated_at: new Date().toISOString()
       })
       .select('id')
       .single();

@@ -97,8 +97,8 @@ export async function getOrCreateConversation(
         .from('conversations')
         .select('*')
         .eq('user_id', userId)
-        .eq('slack_channel_id', slackChannelId)
-        .eq('slack_thread_ts', slackThreadTs)
+        .eq('channel_id', slackChannelId)
+        .eq('thread_id', slackThreadTs)
         .single();
 
       if (threadConversation) {
@@ -109,12 +109,14 @@ export async function getOrCreateConversation(
 
     // Strategy 2: Look for the most recent conversation for this user in this channel
     // This provides better continuity for ongoing conversations
+    // Only consider active conversations for continuity
     const { data: recentConversations } = await supabase
       .from('conversations')
       .select('*')
       .eq('user_id', userId)
-      .eq('slack_channel_id', slackChannelId)
-      .is('slack_thread_ts', null) // Only consider non-threaded conversations for continuity
+      .eq('channel_id', slackChannelId)
+      .eq('status', 'active')
+      .is('thread_id', null) // Only consider non-threaded conversations for continuity
       .order('updated_at', { ascending: false })
       .limit(1);
 
@@ -137,9 +139,11 @@ export async function getOrCreateConversation(
     const { data: newConversation, error: insertError } = await supabase
       .from('conversations')
       .insert([{
+        platform: 'slack',
         user_id: userId,
-        slack_channel_id: slackChannelId,
-        slack_thread_ts: slackThreadTs || null,
+        channel_id: slackChannelId,
+        thread_id: slackThreadTs || null,
+        updated_at: new Date().toISOString(), // Make sure new conversation is most recent
       }])
       .select()
       .single();
@@ -171,7 +175,7 @@ export async function createUserQuery(
       .insert([{
         conversation_id: conversationId,
         content,
-        slack_message_ts: slackMessageTs || null,
+        platform_message_id: slackMessageTs || null,
       }])
       .select()
       .single();
@@ -186,7 +190,7 @@ export async function createUserQuery(
           .from('user_queries')
           .select('*')
           .eq('conversation_id', conversationId)
-          .eq('slack_message_ts', slackMessageTs)
+          .eq('platform_message_id', slackMessageTs)
           .single();
           
         return existingQuery as UserQuery || null;
@@ -209,7 +213,7 @@ export async function createUserQuery(
 export async function createBotResponse(params: {
   query_id: string;
   content: string;
-  slack_message_ts?: string;
+  platform_message_id?: string;
   tokens_used?: number;
   model_used?: string;
   processing_time_ms?: number;
@@ -221,7 +225,7 @@ export async function createBotResponse(params: {
       .insert([{
         query_id: params.query_id,
         content: params.content,
-        slack_message_ts: params.slack_message_ts || null,
+        platform_message_id: params.platform_message_id || null,
         tokens_used: params.tokens_used || null,
         model_used: params.model_used || 'gemini-2.0-flash',
         processing_time_ms: params.processing_time_ms || null,
@@ -327,7 +331,7 @@ export async function updateConversationTitle(conversationId: string, title: str
   try {
     const { error } = await supabase
       .from('conversations')
-      .update({ conversation_title: title })
+      .update({ title: title })
       .eq('id', conversationId);
 
     if (error) {
@@ -418,7 +422,7 @@ export async function clearConversation(conversationId: string): Promise<boolean
     const { error } = await supabase
       .from('conversations')
       .update({ 
-        conversation_title: 'Cleared Chat',
+        title: 'Cleared Chat',
         updated_at: new Date().toISOString()
       })
       .eq('id', conversationId);
@@ -442,9 +446,10 @@ export async function clearConversation(conversationId: string): Promise<boolean
 export async function createNewConversation(userId: string, slackChannelId: string): Promise<Conversation | null> {
   try {
     const conversationData: ConversationInsert = {
+      platform: 'slack',
       user_id: userId,
-      slack_channel_id: slackChannelId,
-      conversation_title: 'New Chat',
+      channel_id: slackChannelId,
+      title: 'New Chat',
       status: 'active'
     };
 
@@ -545,22 +550,22 @@ export async function deleteConversationCompletely(conversationId: string): Prom
 /**
  * Get bot response by Slack message timestamp
  */
-export async function getBotResponseBySlackTs(slackMessageTs: string): Promise<BotResponse | null> {
+export async function getBotResponseByPlatformMessageId(platformMessageId: string): Promise<BotResponse | null> {
   try {
     const { data, error } = await supabase
       .from('bot_responses')
       .select('*')
-      .eq('slack_message_ts', slackMessageTs)
+      .eq('platform_message_id', platformMessageId)
       .single();
 
     if (error) {
-      console.error('Error fetching bot response by slack_message_ts:', error);
+      console.error('Error fetching bot response by platform_message_id:', error);
       return null;
     }
 
     return data as BotResponse;
   } catch (error) {
-    console.error('Error in getBotResponseBySlackTs:', error);
+    console.error('Error in getBotResponseByPlatformMessageId:', error);
     return null;
   }
 }

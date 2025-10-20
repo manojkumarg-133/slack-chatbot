@@ -383,7 +383,7 @@ export interface OldMessage {
   conversation_id: string;
   message_type: 'user_query' | 'bot_response';
   content: string;
-  slack_message_ts?: string;
+  platform_message_id?: string;
   tokens_used?: number;
   model_used?: string;
   processing_time_ms?: number;
